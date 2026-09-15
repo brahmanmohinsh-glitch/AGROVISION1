@@ -1,0 +1,698 @@
+/* ======================= DATA ======================= */
+const ENCYCLOPEDIA = [
+  { name:"Tulsi (Holy Basil)", latin:"Ocimum tenuiflorum", water:"Every 2 days", light:"Full sun", note:"Pinch flower buds to keep leaves productive." },
+  { name:"Money Plant", latin:"Epipremnum aureum", water:"Weekly", light:"Bright, indirect", note:"Wipe leaves monthly to keep the pores clear of dust." },
+  { name:"Aloe Vera", latin:"Aloe barbadensis", water:"Every 12–14 days", light:"Full sun", note:"Let soil dry out fully between waterings." },
+  { name:"Marigold", latin:"Tagetes", water:"Every 2–3 days", light:"Full sun", note:"Deadhead spent blooms to extend flowering." },
+  { name:"Curry Leaf", latin:"Murraya koenigii", water:"Every 3 days", light:"Full sun", note:"Sensitive to cold — keep above 10°C." },
+];
+
+const CROP_DB = [
+  { name:"Rice", soils:["Alluvial","Clay"], ph:[5,7.5], rain:"High", season:"Kharif", note:"Needs standing water for most of the cycle." },
+  { name:"Wheat", soils:["Loamy","Alluvial"], ph:[6,7.5], rain:"Medium", season:"Rabi", note:"Cool growing season, moderate irrigation." },
+  { name:"Cotton", soils:["Black","Loamy"], ph:[6,8], rain:"Medium", season:"Kharif", note:"Deep black soil holds moisture well for it." },
+  { name:"Sugarcane", soils:["Loamy","Alluvial"], ph:[6,7.5], rain:"High", season:"Kharif", note:"Long duration crop, heavy water need." },
+  { name:"Groundnut", soils:["Sandy","Red"], ph:[6,7], rain:"Low", season:"Kharif", note:"Well-drained sandy soil prevents pod rot." },
+  { name:"Bajra (Millet)", soils:["Sandy","Red"], ph:[5,7], rain:"Low", season:"Kharif", note:"Very drought tolerant, low input crop." },
+  { name:"Mustard", soils:["Loamy","Sandy"], ph:[6,7.5], rain:"Low", season:"Rabi", note:"Thrives in cool, dry Rabi conditions." },
+  { name:"Chickpea (Chana)", soils:["Black","Loamy"], ph:[6,8], rain:"Low", season:"Rabi", note:"Fixes nitrogen — good for soil health too." },
+];
+
+const STORES = [
+  { name:"Krishi Seva Kendra", km:"0.8 km", type:"Pesticides & Fertilizers", phone:"+919876543210", stock:["Neem oil","Fungicide","NPK 19:19:19"] },
+  { name:"Green Agro Center", km:"1.4 km", type:"Organic Pesticides", phone:"+919123456780", stock:["Bio-pesticide","Vermicompost"] },
+  { name:"Farmers' Choice Agro Store", km:"2.1 km", type:"General Agri Supplies", phone:"+919988766554", stock:["Insecticide","Seeds","Sprayers"] },
+  { name:"Annapurna Agro Traders", km:"3.0 km", type:"Pesticides & Seeds", phone:"+919000012345", stock:["Herbicide","Fungicide","Hybrid seeds"] },
+];
+
+const DIAGNOSES = [
+  { name:"Leaf Blight", conf:87, host:"Rice, Wheat, houseplants", symptoms:"Brown lesions with yellow halos spreading from leaf tips.", organic:"Neem oil spray every 5–7 days; remove infected leaves.", chemical:"Copper oxychloride 0.3% spray.", severity:"Moderate" },
+  { name:"Aphid Infestation", conf:92, host:"Cotton, vegetables, indoor plants", symptoms:"Curling leaves, sticky honeydew, clusters on new growth.", organic:"Release ladybird beetles; neem-based spray.", chemical:"Imidacloprid 17.8% SL, diluted as directed.", severity:"Mild" },
+  { name:"Powdery Mildew", conf:81, host:"Grapes, cucurbits, houseplants", symptoms:"White powdery coating across leaf surfaces.", organic:"Diluted milk spray (1:9); sulfur dust.", chemical:"Sulfur-based fungicide.", severity:"Moderate" },
+  { name:"Fall Armyworm", conf:89, host:"Maize", symptoms:"Window-pane feeding marks on young leaves, frass near the whorl.", organic:"Bt-based bio-pesticide; hand-pick larvae early morning.", chemical:"Emamectin benzoate 5% SG.", severity:"Severe" },
+  { name:"Root Rot", conf:84, host:"Houseplants, seedlings", symptoms:"Yellowing lower leaves, mushy dark roots, soil stays wet.", organic:"Repot in fresh, well-draining mix; reduce watering.", chemical:"Carbendazim soil drench.", severity:"Moderate" },
+];
+
+const FERTILIZER_DB = {
+  Rice:{n:48,p:24,k:24}, Wheat:{n:48,p:24,k:16}, Cotton:{n:40,p:20,k:20}, Sugarcane:{n:100,p:40,k:40},
+  Groundnut:{n:8,p:16,k:16}, Maize:{n:48,p:24,k:16}, Mustard:{n:24,p:16,k:0}, Chickpea:{n:8,p:20,k:0},
+};
+
+const PESTICIDE_DB = [
+  { name:"Neem oil (organic)", dose:5, unit:"ml/L" },
+  { name:"Imidacloprid 17.8% SL", dose:0.3, unit:"ml/L" },
+  { name:"Copper oxychloride 50% WP", dose:3, unit:"g/L" },
+  { name:"Mancozeb 75% WP", dose:2.5, unit:"g/L" },
+  { name:"Emamectin benzoate 5% SG", dose:0.4, unit:"g/L" },
+  { name:"Chlorpyrifos 20% EC", dose:2.5, unit:"ml/L" },
+];
+
+const SCHEMES = [
+  { name:"PM-KISAN", benefit:"₹6,000/year direct income support, paid in 3 installments of ₹2,000 via bank transfer.", who:"All eligible farmer families with cultivable land." },
+  { name:"PM Fasal Bima Yojana (PMFBY)", benefit:"Crop insurance against natural calamities, pests & disease — farmer premium as low as 1.5–2% of sum insured.", who:"Farmers growing notified crops, loanee & non-loanee both." },
+  { name:"Kisan Credit Card (KCC)", benefit:"Crop & working-capital credit up to ₹3 lakh at ~4% effective interest with on-time repayment; no collateral up to ₹1.6 lakh.", who:"Farmers, incl. dairy, fisheries & animal husbandry." },
+  { name:"Soil Health Card", benefit:"Free soil testing every 2 years with crop-wise fertilizer recommendations, cutting input cost.", who:"All land-holding farmers." },
+  { name:"PM Krishi Sinchayee Yojana", benefit:"Subsidy on drip & sprinkler irrigation equipment to improve water-use efficiency.", who:"Farmers investing in micro-irrigation." },
+  { name:"e-NAM", benefit:"Online mandi platform to sell produce to buyers across India at transparent, competitive prices.", who:"Farmers registered with local APMC mandis." },
+];
+
+/* ======================= STATE ======================= */
+const S = {
+  stage: "splash", // splash | login | app
+  tab: "home",
+  loginStep: "phone",
+  phone: "",
+  otp: ["","","",""],
+  plants: [
+    { id:1, name:"Money Plant", species:"Epipremnum aureum", lastWatered:0, freq:7 },
+    { id:2, name:"Tulsi", species:"Ocimum tenuiflorum", lastWatered:1, freq:2 },
+    { id:3, name:"Aloe Vera", species:"Aloe barbadensis", lastWatered:4, freq:12 },
+  ],
+  plantsTab: "journal",
+  encQuery: "",
+  scanMode: "diagnose", // identify | diagnose
+  scanImg: null,
+  scanBusy: false,
+  scanResult: null,
+  crop: { soil:"Loamy", ph:6.5, rain:"Medium", season:"Kharif" },
+  cropResults: null,
+  irrigation: { alertsOn:true, fields:[
+    { name:"Field A — Wheat", moisture:28, threshold:35 },
+    { name:"Field B — Cotton", moisture:52, threshold:30 },
+    { name:"Greenhouse plot", moisture:44, threshold:40 },
+  ]},
+  farmSection: "crop",
+  moreOpen: null, // null | weather | fert | pest | farmcalc | schemes
+  fert: { crop:"Wheat", area:1 },
+  pest: { product:PESTICIDE_DB[0].name, area:1, vol:200, tank:15 },
+  farmCalc: { area:1, yieldPerAcre:15, price:2200, cost:18000 },
+};
+
+/* ======================= HELPERS ======================= */
+function chip(text, tone){ return `<span class="chip chip-${tone}">${text}</span>`; }
+function fmtINR(n){ return "₹" + Math.round(n).toLocaleString("en-IN"); }
+
+/* ======================= SCREENS ======================= */
+function screenHeader(title, subtitle, icon){
+  return `<div class="screen-header">
+    <h1 class="serif"><span class="hicon">${icon||""}</span>${title}</h1>
+    ${subtitle ? `<p>${subtitle}</p>` : ""}
+  </div>`;
+}
+function subHeader(title, backAction){
+  return `<div class="sub-header">
+    <button class="back-btn" onclick="${backAction}">←</button>
+    <h1 class="serif" style="margin:0;font-size:19px;">${title}</h1>
+  </div>`;
+}
+function topBar(){
+  return `<div class="topbar">
+    <div class="logo">
+      <div class="logo-mark" style="width:28px;height:28px;font-size:15px;">🌱</div>
+      <p class="serif" style="margin:0;font-size:16px;font-weight:600;">Kishan Mitra</p>
+    </div>
+    <div class="avatar">M</div>
+  </div>`;
+}
+
+function renderHome(){
+  const actions = [
+    { k:"scan", icon:"📷", title:"Scan a plant / crop", desc:"Identify or diagnose disease & pests", bg:"#FDF1E4" },
+    { k:"farm", icon:"🌾", title:"Crop advisor", desc:"Best crop for your soil & land", bg:"#EAF2E8" },
+    { k:"farm", icon:"💧", title:"Irrigation alerts", desc:"Soil moisture & watering schedule", bg:"#E7EFF3" },
+    { k:"stores", icon:"🏬", title:"Nearby agri stores", desc:"Pesticides, seeds & fertilizers", bg:"#F1EBDD" },
+    { k:"more", icon:"🧰", title:"Tools & schemes", desc:"Calculators, weather, govt schemes", bg:"#FBE7E4", full:true },
+  ];
+  return `
+    ${screenHeader("Namaste, Mohit","Your farm & garden, in one place","🌿")}
+    <div class="content" style="margin-top:-18px;position:relative;z-index:2;">
+      <div class="card row-between">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:28px;">☀️</span>
+          <div>
+            <p style="margin:0;font-size:12.5px;color:var(--soil);">Today, your area</p>
+            <p style="margin:0;font-weight:600;">31°C · Light chance of rain</p>
+          </div>
+        </div>
+        <span style="font-size:20px;">🌧️</span>
+      </div>
+
+      <div class="grid2 mt5">
+        ${actions.map(a=>`
+          <button class="action-card ${a.full?'full-span':''}" onclick="setTab('${a.k}')">
+            <div class="action-icon" style="background:${a.bg};">${a.icon}</div>
+            <p class="title">${a.title}</p>
+            <p class="desc">${a.desc}</p>
+          </button>
+        `).join("")}
+      </div>
+
+      <div class="mt5">
+        <div class="row-between mt2" style="margin-bottom:10px;">
+          <h2 style="font-size:15px;margin:0;font-weight:700;">Care due today</h2>
+          <button class="pill-btn" style="background:none;color:var(--turmeric);padding:0;" onclick="setTab('plants')">My plants →</button>
+        </div>
+        <div class="card" style="padding:6px 16px;">
+          <div class="list-row">
+            <div class="rowicon" style="background:var(--moss-bg);">💧</div>
+            <div>
+              <p style="margin:0;font-size:13px;font-weight:600;">Money Plant — water today</p>
+              <p style="margin:0;font-size:11px;color:var(--soil);">Balcony, pot 2</p>
+            </div>
+          </div>
+          <div class="list-row">
+            <div class="rowicon" style="background:var(--turmeric-bg);">🌱</div>
+            <div>
+              <p style="margin:0;font-size:13px;font-weight:600;">Field A — irrigation due in 6 hrs</p>
+              <p style="margin:0;font-size:11px;color:var(--soil);">Soil moisture at 28%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderPlants(){
+  const enc = ENCYCLOPEDIA.filter(e => e.name.toLowerCase().includes(S.encQuery.toLowerCase()));
+  return `
+    ${screenHeader("My Plants","Journal, watering & encyclopedia","🌿")}
+    <div class="content mt4">
+      <div class="segmented">
+        <button class="seg-btn ${S.plantsTab==='journal'?'active':''}" onclick="setPlantsTab('journal')">My journal</button>
+        <button class="seg-btn ${S.plantsTab==='encyclopedia'?'active':''}" onclick="setPlantsTab('encyclopedia')">Encyclopedia</button>
+      </div>
+
+      ${S.plantsTab==='journal' ? `
+        <div class="mt4" style="display:flex;flex-direction:column;gap:12px;">
+          ${S.plants.map(p=>{
+            const due = p.lastWatered >= p.freq;
+            return `<div class="card">
+              <div class="row-between">
+                <div>
+                  <p style="margin:0;font-weight:600;">${p.name}</p>
+                  <p style="margin:0;font-size:12px;font-style:italic;color:var(--soil);">${p.species}</p>
+                </div>
+                ${chip(due?"Water due":"Healthy", due?"danger":"moss")}
+              </div>
+              <div class="row-between mt3">
+                <p style="margin:0;font-size:12px;color:var(--soil);">⏱ watered ${p.lastWatered===0?"today":p.lastWatered+"d ago"} · every ${p.freq}d</p>
+                <button class="btn-soft" onclick="waterPlant(${p.id})">💧 Mark watered</button>
+              </div>
+            </div>`;
+          }).join("")}
+          <button style="width:100%;padding:14px;border-radius:16px;border:1.5px dashed var(--soil);background:none;color:var(--soil);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;">+ Add a plant to journal</button>
+        </div>
+      ` : `
+        <div class="mt4">
+          <input type="text" placeholder="Search plant encyclopedia" oninput="onEncSearch(this.value)" style="border-radius:999px;margin-bottom:12px;" value="${S.encQuery}">
+          <div id="encList" style="display:flex;flex-direction:column;gap:12px;">${renderEncList(enc)}</div>
+        </div>
+      `}
+    </div>`;
+}
+function renderEncList(list){
+  return list.map(e=>`
+    <div class="card">
+      <p style="margin:0;font-weight:600;">${e.name}</p>
+      <p style="margin:0 0 8px;font-size:12px;font-style:italic;color:var(--soil);">${e.latin}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        ${chip("💧 "+e.water,"soil")} ${chip("☀️ "+e.light,"soil")}
+      </div>
+      <p style="margin:0;font-size:12px;color:#5A4426;">${e.note}</p>
+    </div>
+  `).join("");
+}
+function onEncSearch(v){
+  S.encQuery = v;
+  document.getElementById("encList").innerHTML = renderEncList(ENCYCLOPEDIA.filter(e=>e.name.toLowerCase().includes(v.toLowerCase())));
+}
+
+function renderScan(){
+  return `
+    ${screenHeader("Scan","Identify a plant, or catch disease & pests early","📷")}
+    <div class="content mt4">
+      <div class="segmented">
+        <button class="seg-btn ${S.scanMode==='identify'?'active':''}" onclick="setScanMode('identify')">Identify plant</button>
+        <button class="seg-btn ${S.scanMode==='diagnose'?'active':''}" onclick="setScanMode('diagnose')">Disease / pest scan</button>
+      </div>
+
+      <div class="card mt4">
+        <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()">
+          ${S.scanImg ? `<img src="${S.scanImg}">` : `<div>⬆️<br><span style="font-size:13px;">Tap to upload a photo</span></div>`}
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="onFile(event)">
+        <button class="btn-primary mt4" id="analyzeBtn" ${S.scanImg?"":"disabled"} onclick="analyze()">
+          ${S.scanBusy ? "Analyzing…" : (S.scanMode==='diagnose' ? "Scan for disease & pests" : "Identify plant")}
+        </button>
+      </div>
+
+      <div id="scanResult">${renderScanResult()}</div>
+    </div>`;
+}
+function renderScanResult(){
+  if (!S.scanResult) return "";
+  if (S.scanResult.type === "diagnose"){
+    const d = S.scanResult.data;
+    const tone = d.severity==="Severe"?"danger":(d.severity==="Mild"?"moss":"sun");
+    return `<div class="card mt4">
+      <div class="row-between mt2" style="margin-bottom:8px;">
+        <p style="margin:0;font-weight:600;">${d.name}</p>
+        ${chip(d.severity+" · "+d.conf+"% match", tone)}
+      </div>
+      <p style="margin:0 0 8px;font-size:12px;color:var(--soil);">Common on: ${d.host}</p>
+      <p style="margin:0 0 12px;font-size:13px;">${d.symptoms}</p>
+      <div style="background:var(--moss-bg);border-radius:12px;padding:10px;margin-bottom:8px;">
+        <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:var(--moss);">Organic treatment</p>
+        <p style="margin:0;font-size:12px;">${d.organic}</p>
+      </div>
+      <div style="background:var(--turmeric-bg);border-radius:12px;padding:10px;margin-bottom:12px;">
+        <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:var(--turmeric);">Chemical treatment</p>
+        <p style="margin:0;font-size:12px;">${d.chemical}</p>
+      </div>
+      <button class="btn-moss" onclick="setTab('stores')">🏬 Find pesticide near me</button>
+    </div>`;
+  } else {
+    const e = S.scanResult.data;
+    return `<div class="card mt4">
+      <p style="margin:0 0 2px;font-weight:600;">✅ ${e.name}</p>
+      <p style="margin:0 0 8px;font-size:12px;font-style:italic;color:var(--soil);">${e.latin}</p>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">${chip("💧 "+e.water,"soil")} ${chip("☀️ "+e.light,"soil")}</div>
+      <p style="margin:0;font-size:12px;color:#5A4426;">${e.note}</p>
+    </div>`;
+  }
+}
+
+function renderFarm(){
+  return `
+    ${screenHeader("Farm Advisor","Crop prediction & irrigation alerts","🌾")}
+    <div class="content mt4">
+      <div class="segmented">
+        <button class="seg-btn ${S.farmSection==='crop'?'active':''}" onclick="setFarmSection('crop')">Crop advisor</button>
+        <button class="seg-btn ${S.farmSection==='irrigation'?'active':''}" onclick="setFarmSection('irrigation')">Irrigation</button>
+      </div>
+      <div class="mt4">${S.farmSection==='crop' ? renderCropAdvisor() : renderIrrigation()}</div>
+    </div>`;
+}
+function renderCropAdvisor(){
+  return `
+    <div class="card">
+      <label class="field-label">Soil type</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+        ${["Loamy","Sandy","Clay","Black","Red","Alluvial"].map(s=>
+          `<button class="pill-btn ${S.crop.soil===s?'active':''}" onclick="setCropField('soil','${s}')">${s}</button>`).join("")}
+      </div>
+      <label class="field-label">Soil pH: <span id="phVal">${S.crop.ph.toFixed(1)}</span></label>
+      <input type="range" min="4" max="9" step="0.1" value="${S.crop.ph}" id="phSlider" oninput="onPhInput(this)"
+        style="margin-bottom:14px;--val:${((S.crop.ph-4)/5*100).toFixed(0)}%;">
+      <label class="field-label">Rainfall in your area</label>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        ${["Low","Medium","High"].map(r=>
+          `<button class="pill-btn ${S.crop.rain===r?'active':''}" style="flex:1;" onclick="setCropField('rain','${r}')">${r}</button>`).join("")}
+      </div>
+      <label class="field-label">Season</label>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        ${["Kharif","Rabi","Zaid"].map(s=>
+          `<button class="pill-btn ${S.crop.season===s?'active':''}" style="flex:1;" onclick="setCropField('season','${s}')">${s}</button>`).join("")}
+      </div>
+      <button class="btn-primary" onclick="predictCrop()">Predict best crops</button>
+    </div>
+    <div id="cropResults">${renderCropResults()}</div>
+  `;
+}
+function renderCropResults(){
+  if (!S.cropResults) return "";
+  return `<div class="mt4" style="display:flex;flex-direction:column;gap:12px;">
+    ${S.cropResults.map((c,i)=>`
+      <div class="card">
+        <div class="row-between" style="margin-bottom:4px;">
+          <p style="margin:0;font-weight:600;">${i+1}. ${c.name}</p>
+          ${chip(c.score+"% match", c.score>=70?"moss":(c.score>=40?"sun":"danger"))}
+        </div>
+        <p style="margin:0;font-size:12px;color:#5A4426;">${c.note}</p>
+      </div>`).join("")}
+  </div>`;
+}
+function renderIrrigation(){
+  const on = S.irrigation.alertsOn;
+  return `
+    <div class="card row-between mt4" style="margin-top:0;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span>${on?"🔔":"🔕"}</span><p style="margin:0;font-size:13px;font-weight:500;">Irrigation alerts</p>
+      </div>
+      <button class="toggle ${on?'on':''}" onclick="toggleAlerts()"><span class="knob"></span></button>
+    </div>
+    <div class="mt4" style="display:flex;flex-direction:column;gap:12px;">
+      ${S.irrigation.fields.map(f=>{
+        const low = f.moisture < f.threshold;
+        return `<div class="card">
+          <div class="row-between" style="margin-bottom:8px;">
+            <p style="margin:0;font-size:13px;font-weight:500;">${f.name}</p>
+            ${ (low && on) ? chip("⚠️ Irrigate now","danger") : chip("On track","moss") }
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span>📊</span>
+            <div class="gauge-bar"><div class="gauge-fill" style="width:${f.moisture}%;background:${low?'var(--danger)':'var(--moss)'};"></div></div>
+            <span style="font-size:12px;color:var(--soil);width:36px;text-align:right;">${f.moisture}%</span>
+          </div>
+          <p style="margin:8px 0 0;font-size:11px;color:var(--soil);">Threshold ${f.threshold}% · ${low ? "irrigate within 6 hrs" : "next check in "+Math.max(1,Math.round((f.moisture-f.threshold)/3))+"h"}</p>
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderStores(){
+  return `
+    ${screenHeader("Nearby Stores","Pesticides, fertilizers & seed suppliers","🏬")}
+    <div class="content mt4" style="display:flex;flex-direction:column;gap:12px;">
+      ${STORES.map(s=>`
+        <div class="card">
+          <div class="row-between">
+            <div>
+              <p style="margin:0;font-weight:600;font-size:14px;">${s.name}</p>
+              <p style="margin:0;font-size:12px;color:var(--soil);">${s.type}</p>
+            </div>
+            ${chip("📍 "+s.km,"soil")}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;">
+            ${s.stock.map(it=>`<span class="stock-tag">${it}</span>`).join("")}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <a href="tel:${s.phone}" class="btn-soft" style="flex:1;text-decoration:none;">📞 Call</a>
+            <button class="btn-soft" style="flex:1;background:var(--moss);color:#fff;">📍 Directions</button>
+          </div>
+        </div>
+      `).join("")}
+    </div>`;
+}
+
+/* ---- More: weather / calculators / schemes ---- */
+function renderMore(){
+  if (S.moreOpen === "weather") return renderWeatherTool();
+  if (S.moreOpen === "fert") return renderFertTool();
+  if (S.moreOpen === "pest") return renderPestTool();
+  if (S.moreOpen === "farmcalc") return renderFarmCalcTool();
+  if (S.moreOpen === "schemes") return renderSchemesTool();
+
+  const tools = [
+    { k:"weather", icon:"⛅", title:"Current weather", desc:"Today's forecast for your farm" },
+    { k:"fert", icon:"🧪", title:"Fertilizer calculator", desc:"Urea, DAP & MOP by crop and area" },
+    { k:"pest", icon:"🧮", title:"Pesticide calculator", desc:"Dose, water & tank refills needed" },
+    { k:"farmcalc", icon:"💰", title:"Farming calculator", desc:"Revenue, profit & break-even yield" },
+    { k:"schemes", icon:"🏛️", title:"Govt schemes", desc:"PM-KISAN, PMFBY, KCC & more" },
+  ];
+  return `
+    ${screenHeader("More Tools","Weather, calculators & government schemes","🧰")}
+    <div class="content mt4" style="display:flex;flex-direction:column;gap:12px;">
+      ${tools.map(t=>`
+        <button class="action-card" style="display:flex;align-items:center;gap:12px;" onclick="openMore('${t.k}')">
+          <div class="action-icon" style="margin:0;background:var(--moss-bg);">${t.icon}</div>
+          <div style="flex:1;">
+            <p class="title">${t.title}</p>
+            <p class="desc">${t.desc}</p>
+          </div>
+          <span>›</span>
+        </button>
+      `).join("")}
+    </div>`;
+}
+function renderWeatherTool(){
+  const forecast = [
+    {d:"Today",t:31,icon:"☀️",rain:10},{d:"Sun",t:32,icon:"☀️",rain:5},
+    {d:"Mon",t:29,icon:"🌧️",rain:60},{d:"Tue",t:28,icon:"🌧️",rain:70},{d:"Wed",t:30,icon:"⛅",rain:20},
+  ];
+  return `
+    ${subHeader("Current Weather","closeMore()")}
+    <div class="content mt4">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:40px;">☀️</div>
+        <p class="serif" style="font-size:36px;margin:4px 0 0;">31°C</p>
+        <p style="margin:0;font-size:13px;color:var(--soil);">Partly sunny · Your location</p>
+        <div style="display:flex;justify-content:center;gap:20px;margin-top:14px;font-size:12px;color:#5A4426;">
+          <span>💨 11 km/h</span><span>💧 58% humidity</span><span>🌧️ 10% rain</span>
+        </div>
+      </div>
+      <div class="card mt4" style="display:flex;justify-content:space-between;">
+        ${forecast.map(f=>`
+          <div style="text-align:center;">
+            <p style="margin:0 0 4px;font-size:11px;color:var(--soil);">${f.d}</p>
+            <div>${f.icon}</div>
+            <p style="margin:4px 0 0;font-size:12px;font-weight:500;">${f.t}°</p>
+            <p style="margin:0;font-size:10px;color:var(--sky);">${f.rain}%</p>
+          </div>`).join("")}
+      </div>
+      <p style="font-size:11px;color:var(--soil);margin-top:12px;">Demo forecast — connect a live weather API for your exact location in production.</p>
+    </div>`;
+}
+function renderFertTool(){
+  const req = FERTILIZER_DB[S.fert.crop];
+  const dap = req.p/0.46, nFromDap = dap*0.18, urea = Math.max(0, req.n - nFromDap)/0.46, mop = req.k/0.6;
+  const area = S.fert.area;
+  return `
+    ${subHeader("Fertilizer Calculator","closeMore()")}
+    <div class="content mt4">
+      <div class="card">
+        <label class="field-label">Crop</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+          ${Object.keys(FERTILIZER_DB).map(c=>`<button class="pill-btn ${S.fert.crop===c?'active':''}" onclick="setFertField('crop','${c}')">${c}</button>`).join("")}
+        </div>
+        <label class="field-label">Area (acres)</label>
+        <input type="number" min="0.1" step="0.1" value="${area}" oninput="setFertField('area', parseFloat(this.value)||0)">
+      </div>
+      <div class="card mt4">
+        <p style="margin:0 0 10px;font-size:12px;color:var(--soil);">Recommended dose for ${S.fert.crop} · ${area} acre(s)</p>
+        <div class="stat-row"><span>Urea (46% N)</span><span style="font-weight:600;color:var(--moss);">${(urea*area).toFixed(1)} kg</span></div>
+        <div class="stat-row"><span>DAP (18-46-0)</span><span style="font-weight:600;color:var(--turmeric);">${(dap*area).toFixed(1)} kg</span></div>
+        <div class="stat-row"><span>MOP (60% K)</span><span style="font-weight:600;color:var(--sky);">${(mop*area).toFixed(1)} kg</span></div>
+        <p style="margin:10px 0 0;font-size:11px;color:var(--soil);">General guideline — fine-tune with your Soil Health Card results.</p>
+      </div>
+      <button class="btn-moss mt4" onclick="recalc()">Recalculate</button>
+    </div>`;
+}
+function renderPestTool(){
+  const product = PESTICIDE_DB.find(p=>p.name===S.pest.product);
+  const totalWater = S.pest.area * S.pest.vol;
+  const totalProduct = totalWater * product.dose;
+  const tankLoads = Math.ceil(totalWater / S.pest.tank);
+  const bigUnit = product.unit.startsWith("ml") ? (totalProduct/1000).toFixed(2)+" L" : (totalProduct/1000).toFixed(2)+" kg";
+  return `
+    ${subHeader("Pesticide Calculator","closeMore()")}
+    <div class="content mt4">
+      <div class="card">
+        <label class="field-label">Product</label>
+        <select onchange="setPestField('product', this.value)" style="margin-bottom:14px;">
+          ${PESTICIDE_DB.map(p=>`<option value="${p.name}" ${p.name===S.pest.product?"selected":""}>${p.name} — ${p.dose} ${p.unit}</option>`).join("")}
+        </select>
+        <div class="grid2" style="margin-bottom:14px;">
+          <div><label class="field-label">Area (acres)</label><input type="number" min="0.1" step="0.1" value="${S.pest.area}" oninput="setPestField('area', parseFloat(this.value)||0)"></div>
+          <div><label class="field-label">Spray vol. (L/acre)</label><input type="number" min="10" step="10" value="${S.pest.vol}" oninput="setPestField('vol', parseFloat(this.value)||0)"></div>
+        </div>
+        <label class="field-label">Sprayer tank size (L)</label>
+        <input type="number" min="1" step="1" value="${S.pest.tank}" oninput="setPestField('tank', parseFloat(this.value)||1)">
+      </div>
+      <div class="card mt4">
+        <div class="stat-row"><span>Total spray water</span><span style="font-weight:600;">${totalWater.toFixed(0)} L</span></div>
+        <div class="stat-row"><span>Product needed</span><span style="font-weight:600;color:var(--turmeric);">${bigUnit}</span></div>
+        <div class="stat-row"><span>Tank refills (${S.pest.tank}L tank)</span><span style="font-weight:600;color:var(--sky);">${tankLoads}</span></div>
+      </div>
+      <button class="btn-moss mt4" onclick="recalc()">Recalculate</button>
+      <button class="btn-soft mt3" style="background:var(--moss);color:#fff;width:100%;" onclick="setTab('stores')">🏬 Find this product nearby</button>
+    </div>`;
+}
+function renderFarmCalcTool(){
+  const {area, yieldPerAcre, price, cost} = S.farmCalc;
+  const revenue = area*yieldPerAcre*price;
+  const profit = revenue - cost;
+  const costPerAcre = cost/(area||1);
+  const breakEven = cost/(price*(area||1));
+  return `
+    ${subHeader("Farming Calculator","closeMore()")}
+    <div class="content mt4">
+      <div class="card">
+        <label class="field-label">Area (acres)</label>
+        <input type="number" min="0" step="0.1" value="${area}" oninput="setFarmCalcField('area', parseFloat(this.value)||0)" style="margin-bottom:12px;">
+        <label class="field-label">Expected yield (quintal/acre)</label>
+        <input type="number" min="0" step="1" value="${yieldPerAcre}" oninput="setFarmCalcField('yieldPerAcre', parseFloat(this.value)||0)" style="margin-bottom:12px;">
+        <label class="field-label">Market price (₹/quintal)</label>
+        <input type="number" min="0" step="50" value="${price}" oninput="setFarmCalcField('price', parseFloat(this.value)||0)" style="margin-bottom:12px;">
+        <label class="field-label">Total input cost (₹)</label>
+        <input type="number" min="0" step="500" value="${cost}" oninput="setFarmCalcField('cost', parseFloat(this.value)||0)">
+      </div>
+      <div class="card mt4">
+        <div class="stat-row"><span>Expected revenue</span><span style="font-weight:600;color:var(--moss);">${fmtINR(revenue)}</span></div>
+        <div class="stat-row"><span>Estimated profit</span><span style="font-weight:600;color:${profit>=0?'var(--moss)':'var(--danger)'};">${fmtINR(profit)}</span></div>
+        <div class="stat-row"><span>Cost per acre</span><span style="font-weight:600;color:var(--soil);">${fmtINR(costPerAcre)}</span></div>
+        <div class="stat-row"><span>Break-even yield</span><span style="font-weight:600;color:var(--sky);">${breakEven.toFixed(1)} q/acre</span></div>
+      </div>
+      <button class="btn-moss mt4" onclick="recalc()">Recalculate</button>
+    </div>`;
+}
+function renderSchemesTool(){
+  return `
+    ${subHeader("Govt Schemes","closeMore()")}
+    <div class="content mt4" style="display:flex;flex-direction:column;gap:12px;">
+      ${SCHEMES.map(s=>`
+        <div class="card">
+          <p style="margin:0 0 6px;font-weight:600;font-size:14px;">🏛️ ${s.name}</p>
+          <p style="margin:0 0 6px;font-size:12px;">${s.benefit}</p>
+          <p style="margin:0;font-size:11px;color:var(--soil);">Eligibility: ${s.who}</p>
+        </div>`).join("")}
+      <p style="font-size:11px;color:var(--soil);">Scheme terms change — confirm current details on the official government portal before applying.</p>
+    </div>`;
+}
+
+/* ---- Splash & Login ---- */
+function renderSplash(){
+  return `<div class="splash">
+    <div class="blob1"></div><div class="blob2"></div><div class="blob3"></div>
+    <div></div>
+    <div style="text-align:center;position:relative;">
+      <div class="splash-badge">🌱</div>
+      <h1 class="serif">Kishan Mitra</h1>
+      <p class="tagline">किसान मित्र · खेती में आपका साथी</p>
+      <p class="desc">Plant care, crop advice, irrigation alerts & the right pesticide store — all in one place.</p>
+      <div class="dots"><span></span><span></span><span></span></div>
+    </div>
+    <button class="btn-primary" onclick="setStage('login')">Get Started →</button>
+  </div>`;
+}
+function renderLogin(){
+  if (S.loginStep === "phone"){
+    return `<div class="login-wrap">
+      <div class="login-logo">
+        <div class="logo-mark" style="width:76px;height:76px;font-size:34px;margin-bottom:12px;">🌱</div>
+        <p class="serif" style="margin:0;font-size:24px;font-weight:600;">Kishan Mitra</p>
+        <p style="margin:6px 0 0;font-size:13px;color:var(--soil);">किसान मित्र · खेती में आपका साथी</p>
+      </div>
+      <h2 style="font-size:19px;margin:0 0 4px;">Welcome, farmer</h2>
+      <p style="font-size:13px;color:var(--soil);margin:0 0 20px;">Enter your mobile number to continue</p>
+      <div class="phone-input-row">
+        <span>+91</span>
+        <input type="tel" id="phoneField" placeholder="98765 43210" maxlength="10"
+          oninput="onPhoneInput(this)">
+      </div>
+      <button class="btn-moss" id="sendOtpBtn" disabled onclick="sendOtp()">Send OTP</button>
+      <button style="background:none;border:none;margin-top:14px;font-size:13px;color:var(--turmeric);font-weight:500;cursor:pointer;font-family:inherit;" onclick="setStage('app')">Continue as guest</button>
+      <p class="footnote">By continuing, you agree to Kishan Mitra's Terms &amp; Privacy Policy.</p>
+    </div>`;
+  }
+  return `<div class="login-wrap">
+    <div class="login-logo">
+      <div class="logo-mark" style="width:76px;height:76px;font-size:34px;margin-bottom:12px;">🌱</div>
+      <p class="serif" style="margin:0;font-size:24px;font-weight:600;">Kishan Mitra</p>
+      <p style="margin:6px 0 0;font-size:13px;color:var(--soil);">किसान मित्र · खेती में आपका साथी</p>
+    </div>
+    <h2 style="font-size:19px;margin:0 0 4px;">Verify your number</h2>
+    <p style="font-size:13px;color:var(--soil);margin:0 0 20px;">Enter the 4-digit code sent to +91 ${S.phone}</p>
+    <div class="otp-row">
+      ${[0,1,2,3].map(i=>`<input class="otp-box" id="otp${i}" maxlength="1" inputmode="numeric" oninput="onOtpInput(this,${i})">`).join("")}
+    </div>
+    <button class="btn-moss" id="verifyBtn" disabled onclick="setStage('app')">Verify &amp; Continue</button>
+    <button style="background:none;border:none;margin-top:14px;font-size:13px;color:var(--soil);font-weight:500;cursor:pointer;font-family:inherit;" onclick="backToPhone()">Change number</button>
+  </div>`;
+}
+
+/* ======================= ACTIONS ======================= */
+function render(){
+  const el = document.getElementById("phone");
+  if (S.stage === "splash"){ el.innerHTML = renderSplash(); return; }
+  if (S.stage === "login"){ el.innerHTML = renderLogin(); return; }
+
+  let body = "";
+  if (S.tab === "home") body = renderHome();
+  else if (S.tab === "plants") body = renderPlants();
+  else if (S.tab === "scan") body = renderScan();
+  else if (S.tab === "farm") body = renderFarm();
+  else if (S.tab === "stores") body = renderStores();
+  else if (S.tab === "more") body = renderMore();
+
+  const nav = [
+    {k:"home",icon:"🏠",l:"Home"},{k:"plants",icon:"🌿",l:"Plants"},{k:"scan",icon:"📷",l:"Scan"},
+    {k:"farm",icon:"🌾",l:"Farm"},{k:"stores",icon:"🏬",l:"Stores"},{k:"more",icon:"🧰",l:"More"},
+  ];
+  el.innerHTML = `
+    <div class="scroll">
+      ${topBar()}
+      <div class="tab-anim">${body}</div>
+    </div>
+    <div class="bottom-nav">
+      ${nav.map(n=>`
+        <button class="nav-btn ${S.tab===n.k?'is-active':''}" onclick="setTab('${n.k}')">
+          <span class="icon-wrap"><span class="icon">${n.icon}</span></span>
+          <span class="lbl" style="color:${S.tab===n.k?'var(--moss)':'var(--muted)'};">${n.l}</span>
+        </button>`).join("")}
+    </div>`;
+}
+
+function setStage(s){ S.stage = s; render(); }
+function setTab(t){ S.tab = t; render(); }
+function setPlantsTab(t){ S.plantsTab = t; render(); }
+function waterPlant(id){ const p = S.plants.find(x=>x.id===id); if(p) p.lastWatered = 0; render(); }
+function setScanMode(m){ S.scanMode = m; S.scanResult = null; S.scanImg = null; render(); }
+function onFile(evt){
+  const f = evt.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    S.scanImg = reader.result; S.scanResult = null;
+    document.getElementById("uploadBox").innerHTML = `<img src="${S.scanImg}">`;
+    document.getElementById("analyzeBtn").disabled = false;
+  };
+  reader.readAsDataURL(f);
+}
+function analyze(){
+  S.scanBusy = true; render();
+  setTimeout(()=>{
+    if (S.scanMode === "diagnose"){
+      S.scanResult = { type:"diagnose", data: DIAGNOSES[Math.floor(Math.random()*DIAGNOSES.length)] };
+    } else {
+      S.scanResult = { type:"identify", data: ENCYCLOPEDIA[Math.floor(Math.random()*ENCYCLOPEDIA.length)] };
+    }
+    S.scanBusy = false; render();
+  }, 1200);
+}
+function setFarmSection(s){ S.farmSection = s; render(); }
+function setCropField(field, val){ S.crop[field] = val; render(); }
+function onPhInput(el){
+  S.crop.ph = parseFloat(el.value);
+  document.getElementById("phVal").textContent = S.crop.ph.toFixed(1);
+  el.style.setProperty("--val", ((S.crop.ph-4)/5*100).toFixed(0)+"%");
+}
+function predictCrop(){
+  const {soil, ph, rain, season} = S.crop;
+  const scored = CROP_DB.map(c=>{
+    let score = 0;
+    if (c.soils.includes(soil)) score += 40;
+    const [lo,hi] = c.ph;
+    if (ph >= lo && ph <= hi) score += 30; else score += Math.max(0, 30 - Math.abs(ph - (ph<lo?lo:hi))*12);
+    if (c.rain === rain) score += 20;
+    if (c.season === season) score += 10;
+    return {...c, score: Math.round(Math.min(score,100))};
+  }).sort((a,b)=>b.score-a.score);
+  S.cropResults = scored.slice(0,4);
+  document.getElementById("cropResults").innerHTML = renderCropResults();
+}
+function toggleAlerts(){ S.irrigation.alertsOn = !S.irrigation.alertsOn; render(); }
+function openMore(k){ S.moreOpen = k; render(); }
+function closeMore(){ S.moreOpen = null; render(); }
+function recalc(){ render(); }
+function setFertField(f,v){ S.fert[f]=v; if(typeof v!=='number'){} }
+function setPestField(f,v){ S.pest[f]=v; }
+function setFarmCalcField(f,v){ S.farmCalc[f]=v; }
+
+/* login flow */
+function onPhoneInput(el){
+  S.phone = el.value.replace(/\D/g,"").slice(0,10);
+  el.value = S.phone;
+  document.getElementById("sendOtpBtn").disabled = S.phone.length !== 10;
+}
+function sendOtp(){ if (S.phone.length===10){ S.loginStep = "otp"; render(); setTimeout(()=>document.getElementById("otp0")?.focus(),50); } }
+function backToPhone(){ S.loginStep = "phone"; S.otp=["","","",""]; render(); }
+function onOtpInput(el, i){
+  const v = el.value.replace(/\D/g,"").slice(0,1);
+  el.value = v; S.otp[i] = v;
+  if (v && i < 3) document.getElementById("otp"+(i+1)).focus();
+  document.getElementById("verifyBtn").disabled = !S.otp.every(d=>d!=="");
+}
+
+/* ======================= INIT ======================= */
+render();
